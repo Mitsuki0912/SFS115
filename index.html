@@ -1,0 +1,2990 @@
+HTML<!DOCTYPE html>
+<html lang="<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>エコ・ライフ記録アプリ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            color: #333;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 850px;
+            background: #ffffff;
+            border-radius: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        @media (min-width: 481px) {
+            .app-container {
+                border-radius: 24px;
+                height: 850px;
+            }
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: none;
+        }
+        .content-area.active {
+            display: block;
+        }
+        h2 {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        /* 選択タブのグリッドデザイン (10個) */
+        .eco-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .eco-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        .eco-item.selected {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        /* マイフォトカレンダーデザイン */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-header button {
+            background: #f1f3f5;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+        .calendar-day-name {
+            font-size: 0.8rem;
+            color: #888;
+            padding-bottom: 6px;
+        }
+        .calendar-date {
+            aspect-ratio: 1;
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .calendar-date img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+        .calendar-date span {
+            position: relative;
+            z-index: 1;
+        }
+        /* ファイル選択パーツ */
+        .file-upload-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        /* 下部ナビゲーション */
+        .nav-bar {
+            display: flex;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            padding: 10px 0;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: #8c9ba5;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .nav-item.active {
+            color: #2e7d32;
+        }
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            border: 2px solid currentColor;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-item.active .nav-icon {
+            background-color: #e8f5e9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- 1ページ目：選択ページ (10個) -->
+    <div id="page-select" class="content-area active">
+        <h2>エコ活動を選択</h2>
+        <div class="eco-grid">
+            <div class="eco-item" onclick="toggleItem(this)">マイ箸</div>
+            <div class="eco-item" onclick="toggleItem(this)">マイボトル</div>
+            <div class="eco-item" onclick="toggleItem(this)">徒歩</div>
+            <div class="eco-item" onclick="toggleItem(this)">自転車</div>
+            <div class="eco-item" onclick="toggleItem(this)">エコマーク</div>
+            <div class="eco-item" onclick="toggleItem(this)">フリーマーケット</div>
+            <div class="eco-item" onclick="toggleItem(this)">譲りもの</div>
+            <div class="eco-item" onclick="toggleItem(this)">リサイクル</div>
+            <div class="eco-item" onclick="toggleItem(this)">水まき</div>
+            <div class="eco-item" onclick="toggleItem(this)">省エネ家電</div>
+        </div>
+    </div>
+
+    <!-- 2ページ目：グラフページ (初期値0) -->
+    <div id="page-graph" class="content-area">
+        <h2>グラフと統計</h2>
+        <p style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+            選択したエコ活動の集計グラフがここに表示されます。<br>現在選択されているデータはありません（初期値 0件）。
+        </p>
+    </div>
+
+    <!-- 3ページ目：状態ページ (初期値レベル1) -->
+    <div id="page-status" class="content-area">
+        <h2>自分の状態</h2>
+        <div style="background: #e8f5e9; padding: 16px; border-radius: 12px; color: #2e7d32; font-weight: bold;">
+            エコ達成度：レベル 1 (0 pt)
+        </div>
+    </div>
+
+    <!-- 4ページ目：マイフォトカレンダー -->
+    <div id="page-calendar" class="content-area">
+        <h2>マイフォトカレンダー</h2>
+        <div class="calendar-header">
+            <button onclick="changeMonth(-1)">&lt;</button>
+            <span id="calendar-title" style="font-weight: bold; font-size: 1.05rem;">2026年 11月</span>
+            <button onclick="changeMonth(1)">&gt;</button>
+        </div>
+        <div class="calendar-grid" id="calendar-days">
+            <!-- 曜日ヘッダー -->
+            <div class="calendar-day-name" style="color: #e53935;">日</div>
+            <div class="calendar-day-name">月</div>
+            <div class="calendar-day-name">火</div>
+            <div class="calendar-day-name">水</div>
+            <div class="calendar-day-name">木</div>
+            <div class="calendar-day-name">金</div>
+            <div class="calendar-day-name" style="color: #1e88e5;">土</div>
+        </div>
+        <div class="file-upload-box">
+            <label for="photo-file" style="cursor: pointer; color: #2e7d32; font-weight: bold;">
+                📁 写真ファイルを選んで背景に設定
+            </label>
+            <input type="file" id="photo-file" accept="image/*" style="display: none;" onchange="setCalendarPhoto(event)">
+        </div>
+    </div>
+
+    <!-- 下部ナビゲーションバー -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="switchPage('select', this)">
+            <div class="nav-icon"></div>
+            <span>選択</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('graph', this)">
+            <div class="nav-icon"></div>
+            <span>グラフ</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('status', this)">
+            <div class="nav-icon"></div>
+            <span>状態</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('calendar', this)">
+            <div class="nav-icon"></div>
+            <span>カレンダー</span>
+        </button>
+    </nav>
+
+</div>
+
+<script>
+    function switchPage(pageId, element) {
+        document.querySelectorAll('.content-area').forEach(area => {
+            area.classList.remove('active');
+        });
+        document.getElementById('page-' + pageId).classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function toggleItem(item) {
+        item.classList.toggle('selected');
+    }
+
+    let uploadedImageURL = "";
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-days');
+        while (grid.children.length > 7) {
+            grid.removeChild(grid.lastChild);
+        }
+        // 2026年11月の例（1日日曜日スタート、30日まで）
+        const startDay = 0; // 日曜日
+        const totalDays = 30;
+
+        for (let i = 0; i < startDay; i++) {
+            const emptyCell = document.createElement('div');
+            grid.appendChild(emptyCell);
+        }
+
+        for (let day = 1; day <= totalDays; day++) {
+            const dateCell = document.createElement('div');
+            dateCell.className = 'calendar-date';
+            
+            if (uploadedImageURL) {
+                const img = document.createElement('img');
+                img.src = uploadedImageURL;
+                dateCell.appendChild(img);
+            }
+
+            const span = document.createElement('span');
+            span.textContent = day;
+            dateCell.appendChild(span);
+
+            grid.appendChild(dateCell);
+        }
+    }
+
+    function setCalendarPhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            uploadedImageURL = URL.createObjectURL(file);
+            generateCalendar();
+        }
+    }
+
+    generateCalendar();
+</script>
+
+</body>
+</html>ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFS</title>
+    <!-- Chart.js のCDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --p: #2e7d32; --l: #e8f5e9; --d: #1b5e20; --a: #81c784; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f1f8e9; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        .app-container { width: 100%; max-width: 480px; height: 90vh; background: #fff; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 3px solid var(--p); }
+        .content-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px; }
+        .page { display: none; animation: f 0.3s; }
+        .page.active { display: block; }
+        @keyframes f { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { color: var(--d); margin-bottom: 20px; text-align: center; }
+        .nav-bar { position: absolute; bottom: 0; width: 100%; height: 70px; background: #fff; border-top: 2px solid var(--l); display: flex; z-index: 10; }
+        .nav-btn { flex: 1; border: none; background: none; color: #888; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .nav-btn.active { color: var(--p); background: var(--l); }
+        .nav-icon { width: 22px; height: 22px; position: relative; }
+        .icon-select::before { content: ''; position: absolute; width: 12px; height: 12px; border: 3px solid currentColor; border-radius: 4px; top: 3px; left: 5px; }
+        .icon-chart::before { content: ''; position: absolute; width: 14px; height: 14px; border: 3px solid currentColor; border-radius: 50%; left: 4px; top: 4px; }
+        .icon-calendar::before { content: ''; position: absolute; width: 16px; height: 14px; border: 2px solid currentColor; border-radius: 3px; top: 4px; left: 3px; }
+        .icon-calendar::after { content: ''; position: absolute; width: 4px; height: 4px; background: currentColor; top: 7px; left: 6px; box-shadow: 6px 0 0 currentColor; }
+        .icon-status::before { content: ''; position: absolute; width: 10px; height: 10px; border: 3px solid currentColor; border-radius: 50%; top: 2px; left: 6px; }
+        .icon-status::after { content: ''; position: absolute; width: 16px; height: 6px; border: 3px solid currentColor; border-top: none; border-radius: 0 0 10px 10px; bottom: 2px; left: 3px; }
+        .eco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .eco-btn { background: var(--l); border: 2px solid var(--a); border-radius: 16px; padding: 16px; font-size: 1rem; font-weight: bold; color: var(--d); cursor: pointer; text-align: center; }
+        .eco-btn:active { transform: scale(0.95); background: var(--a); color: #fff; }
+        .eco-btn.btn-add { background: #fff3e0; border-color: #ffb74d; color: #e65100; }
+        .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px); background: var(--p); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; padding: 20px; border-radius: 24px; }
+        .modal-content { background: #fff; padding: 24px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; border: 3px solid var(--p); animation: pop 0.3s; max-height: 90vh; overflow-y: auto; }
+        @keyframes pop { from { transform: scale(0.8); } to { transform: scale(1); } }
+        .modal input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid var(--a); border-radius: 10px; font-size: 1rem; }
+        .modal input[type="file"] { width: 100%; margin-bottom: 15px; }
+        .preview-img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; border: 2px dashed var(--a); margin-bottom: 15px; display: none; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-confirm { background: var(--p); color: #fff; }
+        .btn-cancel { background: #e0e0e0; color: #333; }
+        .chart-container { position: relative; margin: auto; height: 280px; width: 280px; }
+        /* カレンダーページ用スタイル */
+        .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-controls button { background: var(--p); color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-bottom: 20px; }
+        .cal-header-day { font-size: 0.8rem; font-weight: bold; color: var(--d); padding-bottom: 4px; }
+        .cal-day { aspect-ratio: 1; background: #f9fbe7; border: 1px solid #dcedc8; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 0.8rem; padding: 2px; cursor: pointer; position: relative; overflow: hidden; }
+        .cal-day.empty { background: transparent; border: none; cursor: default; }
+        .cal-day.has-log { background: var(--l); border-color: var(--a); font-weight: bold; }
+        .cal-day img { width: 100%; height: 60%; object-fit: cover; border-radius: 4px; margin-top: 2px; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+        .history-item { display: flex; align-items: center; background: var(--l); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--a); gap: 12px; }
+        .history-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+        .history-info { text-align: left; font-size: 0.85rem; color: var(--d); }
+        .history-date { font-size: 0.75rem; color: #666; }
+        /* ステータスカード用スタイル */
+        .status-card { background: linear-gradient(135deg, #fff, var(--l)); border-radius: 20px; padding: 24px; text-align: center; border: 2px solid var(--a); position: relative; overflow: hidden; }
+        .rank-title { font-size: 1.8rem; font-weight: bold; color: var(--d); margin-bottom: 5px; }
+        .counter-text { font-size: 1.2rem; color: #555; margin-bottom: 25px; }
+        .illustration-box { width: 140px; height: 140px; margin: 0 auto 30px; position: relative; z-index: 2; }
+        .art-certificate { width: 100px; height: 130px; background: #fffde7; margin: auto; border: 6px double #fbc02d; border-radius: 8px; position: relative; }
+        .art-certificate::before { content: '賞状'; position: absolute; top: 15px; left: 0; width: 100%; text-align: center; font-size: 14px; font-weight: bold; color: #f57f17; }
+        .art-certificate::after { content: ''; position: absolute; bottom: 20px; left: 15px; width: 60px; height: 40px; border-top: 3px dashed #f57f17; border-bottom: 3px dashed #f57f17; }
+        .art-medal { width: 80px; height: 80px; background: #eceff1; border-radius: 50%; margin: 30px auto 0; border: 8px solid #b0bec5; position: relative; }
+        .art-medal::before { content: ''; position: absolute; top: -38px; left: 16px; width: 32px; height: 40px; background: linear-gradient(90deg, #e53935 50%, #1e88e5 50%); border-radius: 4px; z-index: -1; }
+        .art-medal::after { content: '1st'; position: absolute; width: 100%; text-align: center; top: 16px; left: 0; font-size: 20px; font-weight: bold; color: #78909c; }
+        .art-trophy { width: 70px; height: 70px; background: #ffd54f; margin: 20px auto 0; border-radius: 0 0 35px 35px; border: 4px solid #ffb300; position: relative; }
+        .art-trophy::before { content: ''; position: absolute; width: 16px; height: 30px; background: #ffb300; top: 66px; left: 23px; }
+        .art-trophy::after { content: ''; position: absolute; width: 50px; height: 16px; background: #cfd8dc; top: 92px; left: 6px; border-radius: 4px; }
+        .t-handle-l, .t-handle-r { position: absolute; width: 20px; height: 40px; border: 5px solid #ffd54f; border-radius: 50%; top: 5px; }
+        .t-handle-l { left: -16px; } .t-handle-r { right: -16px; }
+        .bg-applause { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; display: flex; justify-content: space-around; pointer-events: none; z-index: 1; opacity: 0.25; }
+        .stick-man { width: 40px; height: 70px; position: relative; }
+        .stick-man::before { content: ''; position: absolute; width: 14px; height: 14px; background: #333; border-radius: 50%; top: 5px; left: 13px; }
+        .sm-body { position: absolute; width: 3px; height: 25px; background: #333; top: 19px; left: 18px; }
+        .sm-body::before { content: ''; position: absolute; width: 10px; height: 20px; border-left: 3px solid #333; transform: rotate(15deg); top: 24px; left: -4px; }
+        .sm-body::after { content: ''; position: absolute; width: 10px; height: 20px; border-right: 3px solid #333; transform: rotate(-15deg); top: 24px; left: 3px; }
+        .sm-arm-l, .sm-arm-r { position: absolute; width: 15px; height: 3px; background: #333; top: 22px; transform-origin: 0% 50%; animation: clap 0.2s infinite alternate; }
+        .sm-arm-l { left: 20px; transform: rotate(-40deg); } .sm-arm-r { right: 20px; transform: rotate(-140deg); }
+        @keyframes clap { 0% { transform: rotate(-30deg); } 100% { transform: rotate(-70deg); } }
+        .rank-beginner .art-medal, .rank-beginner .art-trophy { display: none; }
+        .rank-rookie .art-certificate, .rank-rookie .art-trophy { display: none; }
+        .rank-expert .art-certificate, .rank-expert .art-medal { display: none; }
+    </style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="app-container">
+    <div class="content-area">
+        <!-- 1. 選択ページ -->
+        <div id="page-select" class="page active">
+            <h2>エコ行動を記録</h2>
+            <div id="eco-grid" class="eco-grid"></div>
+        </div>
+        <!-- 2. グラフページ -->
+        <div id="page-chart" class="page">
+            <h2>みんなの記録グラフ</h2>
+            <div class="chart-container"><canvas id="ecoChart"></canvas></div>
+        </div>
+        <!-- 3. カレンダーページ -->
+        <div id="page-calendar" class="page">
+            <h2>エコカレンダー</h2>
+            <div class="calendar-controls">
+                <button onclick="changeMonth(-1)">＜ 前月</button>
+                <span id="cal-month-title" style="font-weight:bold; color:var(--d);"></span>
+                <button onclick="changeMonth(1)">次月 ＞</button>
+            </div>
+            <div class="calendar-grid">
+                <div class="cal-header-day" style="color:red;">日</div>
+                <div class="cal-header-day">月</div>
+                <div class="cal-header-day">火</div>
+                <div class="cal-header-day">水</div>
+                <div class="cal-header-day">木</div>
+                <div class="cal-header-day">金</div>
+                <div class="cal-header-day" style="color:blue;">土</div>
+            </div>
+            <div id="calendar-days" class="calendar-grid"></div>
+            <h3 style="font-size:1rem; color:var(--d); margin:15px 0 10px; text-align:left;">最近の記録履歴</h3>
+            <div id="history-list" class="history-list"></div>
+        </div>
+        <!-- 4. 自分の状態ページ -->
+        <div id="page-status" class="page">
+            <h2>現在のランク</h2>
+            <div id="status-card" class="status-card rank-beginner">
+                <div id="rank-title" class="rank-title">エコ見習い 🌱</div>
+                <div id="counter-text" class="counter-text">合計回数: 0回</div>
+                <div class="illustration-box">
+                    <div class="art-certificate"></div>
+                    <div class="art-medal"></div>
+                    <div class="art-trophy"><div class="t-handle-l"></div><div class="t-handle-r"></div></div>
+                </div>
+                <div class="bg-applause">
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="switchPage('select')"><div class="nav-icon icon-select"></div>選択</button>
+        <button class="nav-btn" onclick="switchPage('chart')"><div class="nav-icon icon-chart"></div>グラフ</button>
+        <button class="nav-btn" onclick="switchPage('calendar')"><div class="nav-icon icon-calendar"></div>カレンダー</button>
+        <button class="nav-btn" onclick="switchPage('status')"><div class="nav-icon icon-status"></div>状態</button>
+    </nav>
+</div>
+
+<!-- 新規エコ行動追加用モーダル -->
+<div id="add-modal" class="modal">
+    <div class="modal-content">
+        <h3>新しいエコ行動を追加</h3>
+        <input type="text" id="new-eco-input" placeholder="例: ゴミ拾い" maxlength="15">
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeAddModal()">キャンセル</button>
+            <button class="btn-confirm" onclick="confirmAddEco()">追加</button>
+        </div>
+    </div>
+</div>
+
+<!-- 写真選択用モーダル -->
+<div id="photo-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="photo-modal-title" style="margin-bottom:15px;">写真を選択して記録</h3>
+        <input type="file" id="eco-photo-file" accept="image/*" onchange="previewSelectedImage(event)">
+        <img id="image-preview" class="preview-img" alt="プレビュー">
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closePhotoModal()">キャンセル</button>
+            <button class="btn-confirm" onclick="confirmLogAction()">記録する</button>
+        </div>
+    </div>
+</div>
+
+<!-- 日別詳細確認用モーダル -->
+<div id="day-detail-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="day-detail-title" style="margin-bottom:15px;">日付の記録</h3>
+        <div id="day-detail-content" style="max-height:200px; overflow-y:auto; margin-bottom:15px; display:flex; flex-direction:column; gap:8px;"></div>
+        <div class="modal-btns">
+            <button class="btn-confirm" onclick="closeDayDetailModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<!-- ランクアップお祝いモーダル -->
+<div id="celebrate-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="celebrate-msg">🎉 ランクアップ！ 🎉</h3>
+        <div class="modal-btns">
+            <button class="btn-confirm" onclick="closeCelebrateModal()">ありがとう！</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let ecoItems = ["マイ箸", "マイボトル", "徒歩", "自転車", "エコマーク", "フリーマーケット", "譲りもの", "リサイクル", "水まき"];
+let ecoLogs = JSON.parse(localStorage.getItem('ecoLogs')) || {};
+let customItems = JSON.parse(localStorage.getItem('customItems')) || [];
+let historyLogs = JSON.parse(localStorage.getItem('historyLogs')) || [];
+
+ecoItems = [...ecoItems, ...customItems];
+ecoItems.forEach(item => { if(ecoLogs[item] === undefined) ecoLogs[item] = 0; });
+let chartInstance = null;
+
+let selectedActionItem = null;
+let currentPhotoBase64 = "";
+let currentCalendarDate = new Date();
+
+document.addEventListener("DOMContentLoaded", () => { 
+    renderEcoButtons(); 
+    updateStatusPage(); 
+    initChart(); 
+    renderCalendar();
+    renderHistoryList();
+});
+
+function switchPage(pId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`page-${pId}`).classList.add('active');
+    
+    const idx = pId === 'select' ? 0 : pId === 'chart' ? 1 : pId === 'calendar' ? 2 : 3;
+    document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    
+    if(pId === 'chart') updateChart();
+    if(pId === 'calendar') renderCalendar();
+}
+
+function renderEcoButtons() {
+    const grid = document.getElementById("eco-grid"); 
+    if(!grid) return; 
+    grid.innerHTML = "";
+    ecoItems.forEach(item => {
+        const btn = document.createElement("button"); 
+        btn.className = "eco-btn"; 
+        btn.textContent = item;
+        btn.onclick = () => openPhotoModal(item); 
+        grid.appendChild(btn);
+    });
+    const addBtn = document.createElement("button"); 
+    addBtn.className = "eco-btn btn-add"; 
+    addBtn.textContent = "＋ 追加";
+    addBtn.onclick = openAddModal; 
+    grid.appendChild(addBtn);
+}
+
+function openPhotoModal(item) {
+    selectedActionItem = item;
+    currentPhotoBase64 = "";
+    document.getElementById("photo-modal-title").textContent = `「${item}」の写真を添付`;
+    document.getElementById("eco-photo-file").value = "";
+    const preview = document.getElementById("image-preview");
+    preview.src = "";
+    preview.style.display = "none";
+    document.getElementById("photo-modal").style.display = "flex";
+}
+
+function closePhotoModal() {
+    document.getElementById("photo-modal").style.display = "none";
+    selectedActionItem = null;
+    currentPhotoBase64 = "";
+}
+
+function previewSelectedImage(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        currentPhotoBase64 = e.target.result;
+        const preview = document.getElementById("image-preview");
+        preview.src = currentPhotoBase64;
+        preview.style.display = "block";
+    }
+    reader.readAsDataURL(file);
+}
+
+function confirmLogAction() {
+    if(!selectedActionItem) return;
+    const item = selectedActionItem;
+    
+    ecoLogs[item] = (ecoLogs[item] || 0) + 1; 
+    localStorage.setItem('ecoLogs', JSON.stringify(ecoLogs));
+
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    historyLogs.unshift({
+        date: dateStr,
+        item: item,
+        photo: currentPhotoBase64 || ""
+    });
+    localStorage.setItem('historyLogs', JSON.stringify(historyLogs));
+
+    closePhotoModal();
+    showToast(`${item} ${ecoLogs[item]}回目🎉`);
+
+    const total = Object.values(ecoLogs).reduce((a, b) => a + b, 0);
+    if (total === 50) triggerCelebration("50回目おめでとう！\n【ビギナー📜】になりました！");
+    if (total === 100) triggerCelebration("100回目おめでとう！\n【ルーキー🏅】になりました！");
+    if (total === 150) triggerCelebration("150回目おめでとう！\n【エキスパート🏆】になりました！");
+
+    updateStatusPage();
+    renderCalendar();
+    renderHistoryList();
+}
+
+function showToast(msg) {
+    const t = document.getElementById("toast"); 
+    if(!t) return;
+    t.textContent = msg; 
+    t.classList.add("show"); 
+    setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+function triggerCelebration(msg) {
+    const m = document.getElementById("celebrate-modal"), t = document.getElementById("celebrate-msg");
+    if(m && t) { t.innerText = msg; m.style.display = "flex"; }
+}
+
+function closeCelebrateModal() { 
+    document.getElementById("celebrate-modal").style.display = "none"; 
+}
+
+function openAddModal() { 
+    document.getElementById("add-modal").style.display = "flex"; 
+}
+
+function closeAddModal() { 
+    document.getElementById("add-modal").style.display = "none"; 
+    document.getElementById("new-eco-input").value = ""; 
+}
+
+function confirmAddEco() {
+    const input = document.getElementById("new-eco-input"); 
+    if(!input) return;
+    const val = input.value.trim(); 
+    if(!val) return;
+    if(ecoItems.includes(val)) { alert("その項目はすでにあります。"); return; }
+    ecoItems.push(val); 
+    customItems.push(val); 
+    ecoLogs[val] = 0;
+    localStorage.setItem('customItems', JSON.stringify(customItems)); 
+    localStorage.setItem('ecoLogs', JSON.stringify(ecoLogs));
+    renderEcoButtons(); 
+    closeAddModal(); 
+    showToast(`「${val}」を追加しました！`);
+}
+
+function changeMonth(diff) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + diff);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const titleEl = document.getElementById("cal-month-title");
+    const daysContainer = document.getElementById("calendar-days");
+    if(!titleEl || !daysContainer) return;
+
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    titleEl.textContent = `${year}年 ${month + 1}月`;
+
+    daysContainer.innerHTML = "";
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+
+    const logMap = {};
+    historyLogs.forEach(log => {
+        if(!logMap[log.date]) logMap[log.date] = [];
+        logMap[log.date].push(log);
+    });
+
+    for(let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "cal-day empty";
+        daysContainer.appendChild(emptyCell);
+    }
+
+    for(let d = 1; d <= lastDay; d++) {
+        const mmStr = String(month + 1).padStart(2, '0');
+        const ddStr = String(d).padStart(2, '0');
+        const dateStr = `${year}-${mmStr}-${ddStr}`;
+
+        const cell = document.createElement("div");
+        cell.className = "cal-day";
+        
+        const dayNumber = document.createElement("div");
+        dayNumber.textContent = d;
+        cell.appendChild(dayNumber);
+
+        if(logMap[dateStr] && logMap[dateStr].length > 0) {
+            cell.classList.add("has-log");
+            const logsForDay = logMap[dateStr];
+            const latestWithPhoto = logsForDay.slice().reverse().find(l => l.photo);
+            if(latestWithPhoto) {
+                const img = document.createElement("img");
+                img.src = latestWithPhoto.photo;
+                cell.appendChild(img);
+            } else {
+                const badge = document.createElement("div");
+                badge.style.fontSize = "0.65rem";
+                badge.style.marginTop = "4px";
+                badge.style.color = "var(--d)";
+                badge.textContent = `${logsForDay.length}件`;
+                cell.appendChild(badge);
+            }
+            cell.onclick = () => openDayDetailModal(dateStr, logsForDay);
+        }
+
+        daysContainer.appendChild(cell);
+    }
+}
+
+function openDayDetailModal(dateStr, logs) {
+    const modal = document.getElementById("day-detail-modal");
+    const title = document.getElementById("day-detail-title");
+    const content = document.getElementById("day-detail-content");
+    if(!modal || !title || !content) return;
+
+    title.textContent = `${dateStr} の記録`;
+    content.innerHTML = "";
+
+    logs.forEach(log => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "history-item";
+        
+        if(log.photo) {
+            const img = document.createElement("img");
+            img.src = log.photo;
+            itemDiv.appendChild(img);
+        } else {
+            const placeholder = document.createElement("div");
+            placeholder.style.width = "40px";
+            placeholder.style.height = "40px";
+            placeholder.style.background = "#ddd";
+            placeholder.style.borderRadius = "6px";
+            placeholder.style.display = "flex";
+            placeholder.style.alignItems = "center";
+            placeholder.style.justifyContent = "center";
+            placeholder.style.fontSize = "0.7rem";
+            placeholder.style.color = "#666";
+            placeholder.textContent = "No img";
+            itemDiv.appendChild(placeholder);
+        }
+
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "history-info";
+        infoDiv.innerHTML = `<div style="font-weight:bold;">${log.item}</div>`;
+        itemDiv.appendChild(infoDiv);
+
+        content.appendChild(itemDiv);
+    });
+
+    modal.style.display = "flex";
+}
+
+function closeDayDetailModal() {
+    document.getElementById("day-detail-modal").style.display = "none";
+}
+
+function renderHistoryList() {
+    const listContainer = document.getElementById("history-list");
+    if(!listContainer) return;
+    listContainer.innerHTML = "";
+
+    if(historyLogs.length === 0) {
+        listContainer.innerHTML = `<div style="font-size:0.85rem; color:#888; text-align:center; padding:10px;">まだ履歴がありません</div>`;
+        return;
+    }
+
+    historyLogs.slice(0, 10).forEach(log => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "history-item";
+
+        if(log.photo) {
+            const img = document.createElement("img");
+            img.src = log.photo;
+            itemDiv.appendChild(img);
+        } else {
+            const placeholder = document.createElement("div");
+            placeholder.style.width = "40px";
+            placeholder.style.height = "40px";
+            placeholder.style.background = "#ddd";
+            placeholder.style.borderRadius = "6px";
+            placeholder.style.display = "flex";
+            placeholder.style.alignItems = "center";
+            placeholder.style.justifyContent = "center";
+            placeholder.style.fontSize = "0.7rem";
+            placeholder.style.color = "#666";
+            placeholder.textContent = "No img";
+            itemDiv.appendChild(placeholder);
+        }
+
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "history-info";
+        infoDiv.innerHTML = `
+            <div style="font-weight:bold;">${log.item}</div>
+            <div class="history-date">${log.date}</div>
+        `;
+        itemDiv.appendChild(infoDiv);
+
+        listContainer.appendChild(itemDiv);
+    });
+}
+
+function updateStatusPage() {
+    const total = Object.values(ecoLogs).reduce((a, b) => a + b, 0);
+    const card = document.getElementById("status-card"), title = document.getElementById("rank-title"), counter = document.getElementById("counter-text");
+    if(!card || !title || !counter) return;
+    counter.textContent = `合計回数: ${total}回`; 
+    card.className = "status-card";
+    if (total >= 150) { card.classList.add("rank-expert"); title.innerHTML = "エキスパート 🏆"; }
+    else if (total >= 100) { card.classList.add("rank-rookie"); title.innerHTML = "ルーキー 🏅"; }
+    else if (total >= 50) { card.classList.add("rank-beginner"); title.innerHTML = "ビギナー 📜"; }
+    else { card.classList.add("rank-beginner"); title.innerHTML = "エコ見習い 🌱"; }
+}
+
+function initChart() {
+    const canvas = document.getElementById('ecoChart'); 
+    if(!canvas) return;
+    chartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ecoItems,
+            datasets: [{
+                data: ecoItems.map(item => ecoLogs[item] || 0),
+                backgroundColor: ['#2e7d32', '#4caf50', '#81c784', '#a5d6a7', '#c8e6c9', '#1b5e20', '#388e3c', '#66bb6a', '#43a047', '#7cb342', '#ffb74d', '#ffa726', '#ff9800'],
+                borderWidth: 2, 
+                borderColor: '#ffffff'
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { boxWidth: 12, font: { size: 11 } } 
+                } 
+            } 
+        }
+    });
+}
+
+function updateChart() { 
+    if(chartInstance) { 
+        chartInstance.data.labels = ecoItems; 
+        chartInstance.data.datasets[0].data = ecoItems.map(item => ecoLogs[item] || 0); 
+        chartInstance.update(); 
+    } 
+}
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>エコ・ライフ記録アプリ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 850px;
+            max-height: 95vh;
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: none;
+        }
+        .content-area.active {
+            display: block;
+        }
+        h2 {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        /* 選択タブのグリッドデザイン (10個) */
+        .eco-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .eco-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        .eco-item.selected {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        /* マイフォトカレンダーデザイン */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-header button {
+            background: #f1f3f5;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+        .calendar-day-name {
+            font-size: 0.8rem;
+            color: #888;
+            padding-bottom: 6px;
+        }
+        .calendar-date {
+            aspect-ratio: 1;
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .calendar-date img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+        .calendar-date span {
+            position: relative;
+            z-index: 1;
+        }
+        /* ファイル選択パーツ */
+        .file-upload-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        /* 下部ナビゲーション */
+        .nav-bar {
+            display: flex;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            padding: 10px 0;
+            justify-content: space-around;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: #8c9ba5;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .nav-item.active {
+            color: #2e7d32;
+        }
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            border: 2px solid currentColor;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-item.active .nav-icon {
+            background-color: #e8f5e9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- 1ページ目：選択ページ (10個に整理) -->
+    <div id="page-select" class="content-area active">
+        <h2>エコ活動を選択</h2>
+        <div class="eco-grid">
+            <div class="eco-item" onclick="toggleItem(this)">マイ箸</div>
+            <div class="eco-item" onclick="toggleItem(this)">マイボトル</div>
+            <div class="eco-item" onclick="toggleItem(this)">徒歩</div>
+            <div class="eco-item" onclick="toggleItem(this)">自転車</div>
+            <div class="eco-item" onclick="toggleItem(this)">エコマーク</div>
+            <div class="eco-item" onclick="toggleItem(this)">フリーマーケット</div>
+            <div class="eco-item" onclick="toggleItem(this)">譲りもの</div>
+            <div class="eco-item" onclick="toggleItem(this)">リサイクル</div>
+            <div class="eco-item" onclick="toggleItem(this)">水まき</div>
+            <div class="eco-item" onclick="toggleItem(this)">省エネ家電</div>
+        </div>
+    </div>
+
+    <!-- 2ページ目：グラフページ (初期値0にリセット) -->
+    <div id="page-graph" class="content-area">
+        <h2>グラフと統計</h2>
+        <p style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+            選択したエコ活動の集計グラフがここに表示されます。<br>現在選択されているデータはありません（初期値 0件）。
+        </p>
+    </div>
+
+    <!-- 3ページ目：状態ページ (初期値0にリセット) -->
+    <div id="page-status" class="content-area">
+        <h2>自分の状態</h2>
+        <div style="background: #e8f5e9; padding: 16px; border-radius: 12px; color: #2e7d32; font-weight: bold;">
+            エコ達成度：レベル 1 (0 pt)
+        </div>
+    </div>
+
+    <!-- 4ページ目：マイフォトカレンダー（ファイル選択機能付き・すべてをこの1ページに統合） -->
+    <div id="page-calendar" class="content-area">
+        <h2>マイフォトカレンダー</h2>
+        <div class="calendar-header">
+            <button onclick="changeMonth(-1)">&lt;</button>
+            <span id="calendar-title" style="font-weight: bold; font-size: 1.05rem;">2026年 8月</span>
+            <button onclick="changeMonth(1)">&gt;</button>
+        </div>
+        <div class="calendar-grid" id="calendar-days">
+            <!-- 曜日ヘッダー -->
+            <div class="calendar-day-name" style="color: #e53935;">日</div>
+            <div class="calendar-day-name">月</div>
+            <div class="calendar-day-name">火</div>
+            <div class="calendar-day-name">水</div>
+            <div class="calendar-day-name">木</div>
+            <div class="calendar-day-name">金</div>
+            <div class="calendar-day-name" style="color: #1e88e5;">土</div>
+            <!-- 日付セルはJavaScriptで動的生成 -->
+        </div>
+        <div class="file-upload-box">
+            <label for="photo-file" style="cursor: pointer; color: #2e7d32; font-weight: bold;">
+                📁 写真ファイルを選んで背景に設定
+            </label>
+            <input type="file" id="photo-file" accept="image/*" style="display: none;" onchange="setCalendarPhoto(event)">
+        </div>
+    </div>
+
+    <!-- 下部ナビゲーションバー -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="switchPage('select', this)">
+            <div class="nav-icon"></div>
+            <span>選択</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('graph', this)">
+            <div class="nav-icon"></div>
+            <span>グラフ</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('status', this)">
+            <div class="nav-icon"></div>
+            <span>状態</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('calendar', this)">
+            <div class="nav-icon"></div>
+            <span>カレンダー</span>
+        </button>
+    </nav>
+
+</div>
+
+<script>
+    // タブ切り替え処理
+    function switchPage(pageId, element) {
+        document.querySelectorAll('.content-area').forEach(area => {
+            area.classList.remove('active');
+        });
+        document.getElementById('page-' + pageId).classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    // 選択項目のトグル
+    function toggleItem(item) {
+        item.classList.toggle('selected');
+    }
+
+    // カレンダーの簡易生成
+    let uploadedImageURL = "";
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-days');
+        // 既存の日付セル（曜日名以降）をクリア
+        while (grid.children.length > 7) {
+            grid.removeChild(grid.lastChild);
+        }
+        // 2026年8月の例（1日土曜日スタート、31日まで）
+        const startDay = 6; // 土曜日
+        const totalDays = 31;
+
+        for (let i = 0; i < startDay; i++) {
+            const emptyCell = document.createElement('div');
+            grid.appendChild(emptyCell);
+        }
+
+        for (let day = 1; day <= totalDays; day++) {
+            const dateCell = document.createElement('div');
+            dateCell.className = 'calendar-date';
+            
+            if (uploadedImageURL) {
+                const img = document.createElement('img');
+                img.src = uploadedImageURL;
+                dateCell.appendChild(img);
+            }
+
+            const span = document.createElement('span');
+            span.textContent = day;
+            dateCell.appendChild(span);
+
+            grid.appendChild(dateCell);
+        }
+    }
+
+    // 写真選択時の処理
+    function setCalendarPhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            uploadedImageURL = URL.createObjectURL(file);
+            generateCalendar();
+        }
+    }
+
+    // 初期化実行
+    generateCalendar();
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>エコ・ライフ記録アプリ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            color: #333;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 850px;
+            background: #ffffff;
+            border-radius: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        @media (min-width: 481px) {
+            .app-container {
+                border-radius: 24px;
+                height: 850px;
+            }
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: none;
+        }
+        .content-area.active {
+            display: block;
+        }
+        h2 {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        /* 選択タブのグリッドデザイン (10個) */
+        .eco-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .eco-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        .eco-item.selected {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        /* マイフォトカレンダーデザイン */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-header button {
+            background: #f1f3f5;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+        .calendar-day-name {
+            font-size: 0.8rem;
+            color: #888;
+            padding-bottom: 6px;
+        }
+        .calendar-date {
+            aspect-ratio: 1;
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .calendar-date img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+        .calendar-date span {
+            position: relative;
+            z-index: 1;
+        }
+        /* ファイル選択パーツ */
+        .file-upload-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        /* 下部ナビゲーション */
+        .nav-bar {
+            display: flex;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            padding: 10px 0;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: #8c9ba5;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .nav-item.active {
+            color: #2e7d32;
+        }
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            border: 2px solid currentColor;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-item.active .nav-icon {
+            background-color: #e8f5e9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- 1ページ目：選択ページ (10個) -->
+    <div id="page-select" class="content-area active">
+        <h2>エコ活動を選択</h2>
+        <div class="eco-grid">
+            <div class="eco-item" onclick="toggleItem(this)">マイ箸</div>
+            <div class="eco-item" onclick="toggleItem(this)">マイボトル</div>
+            <div class="eco-item" onclick="toggleItem(this)">徒歩</div>
+            <div class="eco-item" onclick="toggleItem(this)">自転車</div>
+            <div class="eco-item" onclick="toggleItem(this)">エコマーク</div>
+            <div class="eco-item" onclick="toggleItem(this)">フリーマーケット</div>
+            <div class="eco-item" onclick="toggleItem(this)">譲りもの</div>
+            <div class="eco-item" onclick="toggleItem(this)">リサイクル</div>
+            <div class="eco-item" onclick="toggleItem(this)">水まき</div>
+            <div class="eco-item" onclick="toggleItem(this)">省エネ家電</div>
+        </div>
+    </div>
+
+    <!-- 2ページ目：グラフページ -->
+    <div id="page-graph" class="content-area">
+        <h2>グラフと統計</h2>
+        <p style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+            選択したエコ活動の集計グラフがここに表示されます。<br>現在選択されているデータはありません（初期値 0件）。
+        </p>
+    </div>
+
+    <!-- 3ページ目：状態ページ -->
+    <div id="page-status" class="content-area">
+        <h2>自分の状態</h2>
+        <div style="background: #e8f5e9; padding: 16px; border-radius: 12px; color: #2e7d32; font-weight: bold;">
+            エコ達成度：レベル 1 (0 pt)
+        </div>
+    </div>
+
+    <!-- 4ページ目：マイフォトカレンダー -->
+    <div id="page-calendar" class="content-area">
+        <h2>マイフォトカレンダー</h2>
+        <div class="calendar-header">
+            <button onclick="changeMonth(-1)">&lt;</button>
+            <span id="calendar-title" style="font-weight: bold; font-size: 1.05rem;">2026年 11月</span>
+            <button onclick="changeMonth(1)">&gt;</button>
+        </div>
+        <div class="calendar-grid" id="calendar-days">
+            <!-- 曜日ヘッダー -->
+            <div class="calendar-day-name" style="color: #e53935;">日</div>
+            <div class="calendar-day-name">月</div>
+            <div class="calendar-day-name">火</div>
+            <div class="calendar-day-name">水</div>
+            <div class="calendar-day-name">木</div>
+            <div class="calendar-day-name">金</div>
+            <div class="calendar-day-name" style="color: #1e88e5;">土</div>
+        </div>
+        <div class="file-upload-box">
+            <label for="photo-file" style="cursor: pointer; color: #2e7d32; font-weight: bold;">
+                📁 写真ファイルを選んで背景に設定
+            </label>
+            <input type="file" id="photo-file" accept="image/*" style="display: none;" onchange="setCalendarPhoto(event)">
+        </div>
+    </div>
+
+    <!-- 下部ナビゲーションバー -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="switchPage('select', this)">
+            <div class="nav-icon"></div>
+            <span>選択</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('graph', this)">
+            <div class="nav-icon"></div>
+            <span>グラフ</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('status', this)">
+            <div class="nav-icon"></div>
+            <span>状態</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('calendar', this)">
+            <div class="nav-icon"></div>
+            <span>カレンダー</span>
+        </button>
+    </nav>
+
+</div>
+
+<script>
+    function switchPage(pageId, element) {
+        document.querySelectorAll('.content-area').forEach(area => {
+            area.classList.remove('active');
+        });
+        document.getElementById('page-' + pageId).classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function toggleItem(item) {
+        item.classList.toggle('selected');
+    }
+
+    let uploadedImageURL = "";
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-days');
+        while (grid.children.length > 7) {
+            grid.removeChild(grid.lastChild);
+        }
+        // 2026年11月の例（1日日曜日スタート、30日まで）
+        const startDay = 0; // 日曜日
+        const totalDays = 30;
+
+        for (let i = 0; i < startDay; i++) {
+            const emptyCell = document.createElement('div');
+            grid.appendChild(emptyCell);
+        }
+
+        for (let day = 1; day <= totalDays; day++) {
+            const dateCell = document.createElement('div');
+            dateCell.className = 'calendar-date';
+            
+            if (uploadedImageURL) {
+                const img = document.createElement('img');
+                img.src = uploadedImageURL;
+                dateCell.appendChild(img);
+            }
+
+            const span = document.createElement('span');
+            span.textContent = day;
+            dateCell.appendChild(span);
+
+            grid.appendChild(dateCell);
+        }
+    }
+
+    function setCalendarPhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            uploadedImageURL = URL.createObjectURL(file);
+            generateCalendar();
+        }
+    }
+
+    generateCalendar();
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFS</title>
+    <!-- Chart.js のCDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --p: #2e7d32; --l: #e8f5e9; --d: #1b5e20; --a: #81c784; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f1f8e9; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        .app-container { width: 100%; max-width: 480px; height: 90vh; background: #fff; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 3px solid var(--p); }
+        .content-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px; }
+        .page { display: none; animation: f 0.3s; }
+        .page.active { display: block; }
+        @keyframes f { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { color: var(--d); margin-bottom: 20px; text-align: center; }
+        .nav-bar { position: absolute; bottom: 0; width: 100%; height: 70px; background: #fff; border-top: 2px solid var(--l); display: flex; z-index: 10; }
+        .nav-btn { flex: 1; border: none; background: none; color: #888; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .nav-btn.active { color: var(--p); background: var(--l); }
+        .nav-icon { width: 22px; height: 22px; position: relative; }
+        .icon-select::before { content: ''; position: absolute; width: 12px; height: 12px; border: 3px solid currentColor; border-radius: 4px; top: 3px; left: 5px; }
+        .icon-chart::before { content: ''; position: absolute; width: 14px; height: 14px; border: 3px solid currentColor; border-radius: 50%; left: 4px; top: 4px; }
+        .icon-calendar::before { content: ''; position: absolute; width: 16px; height: 14px; border: 2px solid currentColor; border-radius: 3px; top: 4px; left: 3px; }
+        .icon-calendar::after { content: ''; position: absolute; width: 4px; height: 4px; background: currentColor; top: 7px; left: 6px; box-shadow: 6px 0 0 currentColor; }
+        .icon-status::before { content: ''; position: absolute; width: 10px; height: 10px; border: 3px solid currentColor; border-radius: 50%; top: 2px; left: 6px; }
+        .icon-status::after { content: ''; position: absolute; width: 16px; height: 6px; border: 3px solid currentColor; border-top: none; border-radius: 0 0 10px 10px; bottom: 2px; left: 3px; }
+        .eco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .eco-btn { background: var(--l); border: 2px solid var(--a); border-radius: 16px; padding: 16px; font-size: 1rem; font-weight: bold; color: var(--d); cursor: pointer; text-align: center; }
+        .eco-btn:active { transform: scale(0.95); background: var(--a); color: #fff; }
+        .eco-btn.btn-add { background: #fff3e0; border-color: #ffb74d; color: #e65100; }
+        .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px); background: var(--p); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; padding: 20px; border-radius: 24px; }
+        .modal-content { background: #fff; padding: 24px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; border: 3px solid var(--p); animation: pop 0.3s; max-height: 90vh; overflow-y: auto; }
+        @keyframes pop { from { transform: scale(0.8); } to { transform: scale(1); } }
+        .modal input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid var(--a); border-radius: 10px; font-size: 1rem; }
+        .modal input[type="file"] { width: 100%; margin-bottom: 15px; }
+        .preview-img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; border: 2px dashed var(--a); margin-bottom: 15px; display: none; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-confirm { background: var(--p); color: #fff; }
+        .btn-cancel { background: #e0e0e0; color: #333; }
+        .chart-container { position: relative; margin: auto; height: 280px; width: 280px; }
+        /* カレンダーページ用スタイル */
+        .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-controls button { background: var(--p); color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-bottom: 20px; }
+        .cal-header-day { font-size: 0.8rem; font-weight: bold; color: var(--d); padding-bottom: 4px; }
+        .cal-day { aspect-ratio: 1; background: #f9fbe7; border: 1px solid #dcedc8; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 0.8rem; padding: 2px; cursor: pointer; position: relative; overflow: hidden; }
+        .cal-day.empty { background: transparent; border: none; cursor: default; }
+        .cal-day.has-log { background: var(--l); border-color: var(--a); font-weight: bold; }
+        .cal-day img { width: 100%; height: 60%; object-fit: cover; border-radius: 4px; margin-top: 2px; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+        .history-item { display: flex; align-items: center; background: var(--l); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--a); gap: 12px; }
+        .history-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+        .history-info { text-align: left; font-size: 0.85rem; color: var(--d); }
+        .history-date { font-size: 0.75rem; color: #666; }
+        /* ステータスカード用スタイル */
+        .status-card { background: linear-gradient(135deg, #fff, var(--l)); border-radius: 20px; padding: 24px; text-align: center; border: 2px solid var(--a); position: relative; overflow: hidden; }
+        .rank-title { font-size: 1.8rem; font-weight: bold; color: var(--d); margin-bottom: 5px; }
+        .counter-text { font-size: 1.2rem; color: #555; margin-bottom: 25px; }
+        .illustration-box { width: 140px; height: 140px; margin: 0 auto 30px; position: relative; z-index: 2; }
+        .art-certificate { width: 100px; height: 130px; background: #fffde7; margin: auto; border: 6px double #fbc02d; border-radius: 8px; position: relative; }
+        .art-certificate::before { content: '賞状'; position: absolute; top: 15px; left: 0; width: 100%; text-align: center; font-size: 14px; font-weight: bold; color: #f57f17; }
+        .art-certificate::after { content: ''; position: absolute; bottom: 20px; left: 15px; width: 60px; height: 40px; border-top: 3px dashed #f57f17; border-bottom: 3px dashed #f57f17; }
+        .art-medal { width: 80px; height: 80px; background: #eceff1; border-radius: 50%; margin: 30px auto 0; border: 8px solid #b0bec5; position: relative; }
+        .art-medal::before { content: ''; position: absolute; top: -38px; left: 16px; width: 32px; height: 40px; background: linear-gradient(90deg, #e53935 50%, #1e88e5 50%); border-radius: 4px; z-index: -1; }
+        .art-medal::after { content: '1st'; position: absolute; width: 100%; text-align: center; top: 16px; left: 0; font-size: 20px; font-weight: bold; color: #78909c; }
+        .art-trophy { width: 70px; height: 70px; background: #ffd54f; margin: 20px auto 0; border-radius: 0 0 35px 35px; border: 4px solid #ffb300; position: relative; }
+        .art-trophy::before { content: ''; position: absolute; width: 16px; height: 30px; background: #ffb300; top: 66px; left: 23px; }
+        .art-trophy::after { content: ''; position: absolute; width: 50px; height: 16px; background: #cfd8dc; top: 92px; left: 6px; border-radius: 4px; }
+        .t-handle-l, .t-handle-r { position: absolute; width: 20px; height: 40px; border: 5px solid #ffd54f; border-radius: 50%; top: 5px; }
+        .t-handle-l { left: -16px; } .t-handle-r { right: -16px; }
+        .bg-applause { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; display: flex; justify-content: space-around; pointer-events: none; z-index: 1; opacity: 0.25; }
+        .stick-man { width: 40px; height: 70px; position: relative; }
+        .stick-man::before { content: ''; position: absolute; width: 14px; height: 14px; background: #333; border-radius: 50%; top: 5px; left: 13px; }
+        .sm-body { position: absolute; width: 3px; height: 25px; background: #333; top: 19px; left: 18px; }
+        .sm-body::before { content: ''; position: absolute; width: 10px; height: 20px; border-left: 3px solid #333; transform: rotate(15deg); top: 24px; left: -4px; }
+        .sm-body::after { content: ''; position: absolute; width: 10px; height: 20px; border-right: 3px solid #333; transform: rotate(-15deg); top: 24px; left: 3px; }
+        .sm-arm-l, .sm-arm-r { position: absolute; width: 15px; height: 3px; background: #333; top: 22px; transform-origin: 0% 50%; animation: clap 0.2s infinite alternate; }
+        .sm-arm-l { left: 20px; transform: rotate(-40deg); } .sm-arm-r { right: 20px; transform: rotate(-140deg); }
+        @keyframes clap { 0% { transform: rotate(-30deg); } 100% { transform: rotate(-70deg); } }
+        .rank-beginner .art-medal, .rank-beginner .art-trophy { display: none; }
+        .rank-rookie .art-certificate, .rank-rookie .art-trophy { display: none; }
+        .rank-expert .art-certificate, .rank-expert .art-medal { display: none; }
+    </style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="app-container">
+    <div class="content-area">
+        <!-- 1. 選択ページ -->
+        <div id="page-select" class="page active">
+            <h2>エコ行動を記録</h2>
+            <div id="eco-grid" class="eco-grid"></div>
+        </div>
+        <!-- 2. グラフページ -->
+        <div id="page-chart" class="page">
+            <h2>みんなの記録グラフ</h2>
+            <div class="chart-container"><canvas id="ecoChart"></canvas></div>
+        </div>
+        <!-- 3. カレンダーページ -->
+        <div id="page-calendar" class="page">
+            <h2>エコカレンダー</h2>
+            <div class="calendar-controls">
+                <button onclick="changeMonth(-1)">＜ 前月</button>
+                <span id="cal-month-title" style="font-weight:bold; color:var(--d);"></span>
+                <button onclick="changeMonth(1)">次月 ＞</button>
+            </div>
+            <div class="calendar-grid">
+                <div class="cal-header-day" style="color:red;">日</div>
+                <div class="cal-header-day">月</div>
+                <div class="cal-header-day">火</div>
+                <div class="cal-header-day">水</div>
+                <div class="cal-header-day">木</div>
+                <div class="cal-header-day">金</div>
+                <div class="cal-header-day" style="color:blue;">土</div>
+            </div>
+            <div id="calendar-days" class="calendar-grid"></div>
+            <h3 style="font-size:1rem; color:var(--d); margin:15px 0 10px; text-align:left;">最近の記録履歴</h3>
+            <div id="history-list" class="history-list"></div>
+        </div>
+        <!-- 4. 自分の状態ページ -->
+        <div id="page-status" class="page">
+            <h2>現在のランク</h2>
+            <div id="status-card" class="status-card rank-beginner">
+                <div id="rank-title" class="rank-title">エコ見習い 🌱</div>
+                <div id="counter-text" class="counter-text">合計回数: 0回</div>
+                <div class="illustration-box">
+                    <div class="art-certificate"></div>
+                    <div class="art-medal"></div>
+                    <div class="art-trophy"><div class="t-handle-l"></div><div class="t-handle-r"></div></div>
+                </div>
+                <div class="bg-applause">
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="switchPage('select')"><div class="nav-icon icon-select"></div>選択</button>
+        <button class="nav-btn" onclick="switchPage('chart')"><div class="nav-icon icon-chart"></div>グラフ</button>
+        <button class="nav-btn" onclick="switchPage('calendar')"><div class="nav-icon icon-calendar"></div>カレンダー</button>
+        <button class="nav-btn" onclick="switchPage('status')"><div class="nav-icon icon-status"></div>状態</button>
+    </nav>
+</div>
+
+<!-- 新規エコ行動追加用モーダル -->
+<div id="add-modal" class="modal">
+    <div class="modal-content">
+        <h3>新しいエコ行動を追加</h3>
+        <input type="text" id="new-eco-input" placeholder="例: ゴミ拾い" maxlength="15">
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeAddModal()">キャンセル</button>
+            <button class="btn-confirm" onclick="confirmAddEco()">追加</button>
+        </div>
+    </div>
+</div>
+
+<!-- 写真選択用モーダル -->
+<div id="photo-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="photo-modal-title" style="margin-bottom:15px;">写真を選択して記録</h3>
+        <input type="file" id="eco-photo-file" accept="image/*" onchange="previewSelectedImage(event)">
+        <img id="image-preview" class="preview-img" alt="プレビュー">
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closePhotoModal()">キャンセル</button>
+            <button class="btn-confirm" onclick="confirmLogAction()">記録する</button>
+        </div>
+    </div>
+</div>
+
+<!-- 日別詳細確認用モーダル -->
+<div id="day-detail-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="day-detail-title" style="margin-bottom:15px;">日付の記録</h3>
+        <div id="day-detail-content" style="max-height:200px; overflow-y:auto; margin-bottom:15px; display:flex; flex-direction:column; gap:8px;"></div>
+        <div class="modal-btns">
+            <button class="btn-confirm" onclick="closeDayDetailModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<!-- ランクアップお祝いモーダル -->
+<div id="celebrate-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="celebrate-msg">🎉 ランクアップ！ 🎉</h3>
+        <div class="modal-btns">
+            <button class="btn-confirm" onclick="closeCelebrateModal()">ありがとう！</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let ecoItems = ["マイ箸", "マイボトル", "徒歩", "自転車", "エコマーク", "フリーマーケット", "譲りもの", "リサイクル", "水まき"];
+let ecoLogs = JSON.parse(localStorage.getItem('ecoLogs')) || {};
+let customItems = JSON.parse(localStorage.getItem('customItems')) || [];
+let historyLogs = JSON.parse(localStorage.getItem('historyLogs')) || []; // [{date: 'YYYY-MM-DD', item: '名前', photo: 'base64...'}]
+
+ecoItems = [...ecoItems, ...customItems];
+ecoItems.forEach(item => { if(ecoLogs[item] === undefined) ecoLogs[item] = 0; });
+let chartInstance = null;
+
+let selectedActionItem = null;
+let currentPhotoBase64 = "";
+let currentCalendarDate = new Date();
+
+document.addEventListener("DOMContentLoaded", () => { 
+    renderEcoButtons(); 
+    updateStatusPage(); 
+    initChart(); 
+    renderCalendar();
+    renderHistoryList();
+});
+
+function switchPage(pId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`page-${pId}`).classList.add('active');
+    
+    const idx = pId === 'select' ? 0 : pId === 'chart' ? 1 : pId === 'calendar' ? 2 : 3;
+    document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    
+    if(pId === 'chart') updateChart();
+    if(pId === 'calendar') renderCalendar();
+}
+
+function renderEcoButtons() {
+    const grid = document.getElementById("eco-grid"); 
+    if(!grid) return; 
+    grid.innerHTML = "";
+    ecoItems.forEach(item => {
+        const btn = document.createElement("button"); 
+        btn.className = "eco-btn"; 
+        btn.textContent = item;
+        btn.onclick = () => openPhotoModal(item); 
+        grid.appendChild(btn);
+    });
+    const addBtn = document.createElement("button"); 
+    addBtn.className = "eco-btn btn-add"; 
+    addBtn.textContent = "＋ 追加";
+    addBtn.onclick = openAddModal; 
+    grid.appendChild(addBtn);
+}
+
+// 写真選択モーダル関連
+function openPhotoModal(item) {
+    selectedActionItem = item;
+    currentPhotoBase64 = "";
+    document.getElementById("photo-modal-title").textContent = `「${item}」の写真を添付`;
+    document.getElementById("eco-photo-file").value = "";
+    const preview = document.getElementById("image-preview");
+    preview.src = "";
+    preview.style.display = "none";
+    document.getElementById("photo-modal").style.display = "flex";
+}
+
+function closePhotoModal() {
+    document.getElementById("photo-modal").style.display = "none";
+    selectedActionItem = null;
+    currentPhotoBase64 = "";
+}
+
+function previewSelectedImage(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        currentPhotoBase64 = e.target.result;
+        const preview = document.getElementById("image-preview");
+        preview.src = currentPhotoBase64;
+        preview.style.display = "block";
+    }
+    reader.readAsDataURL(file);
+}
+
+function confirmLogAction() {
+    if(!selectedActionItem) return;
+    const item = selectedActionItem;
+    
+    ecoLogs[item] = (ecoLogs[item] || 0) + 1; 
+    localStorage.setItem('ecoLogs', JSON.stringify(ecoLogs));
+
+    // 日付フォーマット YYYY-MM-DD
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    // 履歴に追加
+    historyLogs.unshift({
+        date: dateStr,
+        item: item,
+        photo: currentPhotoBase64 || ""
+    });
+    localStorage.setItem('historyLogs', JSON.stringify(historyLogs));
+
+    closePhotoModal();
+    showToast(`${item} ${ecoLogs[item]}回目🎉`);
+
+    const total = Object.values(ecoLogs).reduce((a, b) => a + b, 0);
+    if (total === 50) triggerCelebration("50回目おめでとう！\n【ビギナー📜】になりました！");
+    if (total === 100) triggerCelebration("100回目おめでとう！\n【ルーキー🏅】になりました！");
+    if (total === 150) triggerCelebration("150回目おめでとう！\n【エキスパート🏆】になりました！");
+
+    updateStatusPage();
+    renderCalendar();
+    renderHistoryList();
+}
+
+function showToast(msg) {
+    const t = document.getElementById("toast"); 
+    if(!t) return;
+    t.textContent = msg; 
+    t.classList.add("show"); 
+    setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+function triggerCelebration(msg) {
+    const m = document.getElementById("celebrate-modal"), t = document.getElementById("celebrate-msg");
+    if(m && t) { t.innerText = msg; m.style.display = "flex"; }
+}
+
+function closeCelebrateModal() { 
+    document.getElementById("celebrate-modal").style.display = "none"; 
+}
+
+function openAddModal() { 
+    document.getElementById("add-modal").style.display = "flex"; 
+}
+
+function closeAddModal() { 
+    document.getElementById("add-modal").style.display = "none"; 
+    document.getElementById("new-eco-input").value = ""; 
+}
+
+function confirmAddEco() {
+    const input = document.getElementById("new-eco-input"); 
+    if(!input) return;
+    const val = input.value.trim(); 
+    if(!val) return;
+    if(ecoItems.includes(val)) { alert("その項目はすでにあります。"); return; }
+    ecoItems.push(val); 
+    customItems.push(val); 
+    ecoLogs[val] = 0;
+    localStorage.setItem('customItems', JSON.stringify(customItems)); 
+    localStorage.setItem('ecoLogs', JSON.stringify(ecoLogs));
+    renderEcoButtons(); 
+    closeAddModal(); 
+    showToast(`「${val}」を追加しました！`);
+}
+
+// カレンダー関連ロジック
+function changeMonth(diff) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + diff);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const titleEl = document.getElementById("cal-month-title");
+    const daysContainer = document.getElementById("calendar-days");
+    if(!titleEl || !daysContainer) return;
+
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    titleEl.textContent = `${year}年 ${month + 1}月`;
+
+    daysContainer.innerHTML = "";
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+
+    // 日付ごとのログをインデックス化
+    const logMap = {};
+    historyLogs.forEach(log => {
+        if(!logMap[log.date]) logMap[log.date] = [];
+        logMap[log.date].push(log);
+    });
+
+    // 空白マス
+    for(let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "cal-day empty";
+        daysContainer.appendChild(emptyCell);
+    }
+
+    // 日付マス
+    for(let d = 1; d <= lastDay; d++) {
+        const mmStr = String(month + 1).padStart(2, '0');
+        const ddStr = String(d).padStart(2, '0');
+        const dateStr = `${year}-${mmStr}-${ddStr}`;
+
+        const cell = document.createElement("div");
+        cell.className = "cal-day";
+        
+        const dayNumber = document.createElement("div");
+        dayNumber.textContent = d;
+        cell.appendChild(dayNumber);
+
+        if(logMap[dateStr] && logMap[dateStr].length > 0) {
+            cell.classList.add("has-log");
+            const logsForDay = logMap[dateStr];
+            // 写真があれば最後の写真をサムネイル表示
+            const latestWithPhoto = logsForDay.slice().reverse().find(l => l.photo);
+            if(latestWithPhoto) {
+                const img = document.createElement("img");
+                img.src = latestWithPhoto.photo;
+                cell.appendChild(img);
+            } else {
+                const badge = document.createElement("div");
+                badge.style.fontSize = "0.65rem";
+                badge.style.marginTop = "4px";
+                badge.style.color = "var(--d)";
+                badge.textContent = `${logsForDay.length}件`;
+                cell.appendChild(badge);
+            }
+            cell.onclick = () => openDayDetailModal(dateStr, logsForDay);
+        }
+
+        daysContainer.appendChild(cell);
+    }
+}
+
+function openDayDetailModal(dateStr, logs) {
+    const modal = document.getElementById("day-detail-modal");
+    const title = document.getElementById("day-detail-title");
+    const content = document.getElementById("day-detail-content");
+    if(!modal || !title || !content) return;
+
+    title.textContent = `${dateStr} の記録`;
+    content.innerHTML = "";
+
+    logs.forEach(log => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "history-item";
+        
+        if(log.photo) {
+            const img = document.createElement("img");
+            img.src = log.photo;
+            itemDiv.appendChild(img);
+        } else {
+            const placeholder = document.createElement("div");
+            placeholder.style.width = "40px";
+            placeholder.style.height = "40px";
+            placeholder.style.background = "#ddd";
+            placeholder.style.borderRadius = "6px";
+            placeholder.style.display = "flex";
+            placeholder.style.alignItems = "center";
+            placeholder.style.justifyContent = "center";
+            placeholder.style.fontSize = "0.7rem";
+            placeholder.style.color = "#666";
+            placeholder.textContent = "No img";
+            itemDiv.appendChild(placeholder);
+        }
+
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "history-info";
+        infoDiv.innerHTML = `<div style="font-weight:bold;">${log.item}</div>`;
+        itemDiv.appendChild(infoDiv);
+
+        content.appendChild(itemDiv);
+    });
+
+    modal.style.display = "flex";
+}
+
+function closeDayDetailModal() {
+    document.getElementById("day-detail-modal").style.display = "none";
+}
+
+function renderHistoryList() {
+    const listContainer = document.getElementById("history-list");
+    if(!listContainer) return;
+    listContainer.innerHTML = "";
+
+    if(historyLogs.length === 0) {
+        listContainer.innerHTML = `<div style="font-size:0.85rem; color:#888; text-align:center; padding:10px;">まだ履歴がありません</div>`;
+        return;
+    }
+
+    // 最大直近10件を表示
+    historyLogs.slice(0, 10).forEach(log => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "history-item";
+
+        if(log.photo) {
+            const img = document.createElement("img");
+            img.src = log.photo;
+            itemDiv.appendChild(img);
+        } else {
+            const placeholder = document.createElement("div");
+            placeholder.style.width = "40px";
+            placeholder.style.height = "40px";
+            placeholder.style.background = "#ddd";
+            placeholder.style.borderRadius = "6px";
+            placeholder.style.display = "flex";
+            placeholder.style.alignItems = "center";
+            placeholder.style.justifyContent = "center";
+            placeholder.style.fontSize = "0.7rem";
+            placeholder.style.color = "#666";
+            placeholder.textContent = "No img";
+            itemDiv.appendChild(placeholder);
+        }
+
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "history-info";
+        infoDiv.innerHTML = `
+            <div style="font-weight:bold;">${log.item}</div>
+            <div class="history-date">${log.date}</div>
+        `;
+        itemDiv.appendChild(infoDiv);
+
+        listContainer.appendChild(itemDiv);
+    });
+}
+
+function updateStatusPage() {
+    const total = Object.values(ecoLogs).reduce((a, b) => a + b, 0);
+    const card = document.getElementById("status-card"), title = document.getElementById("rank-title"), counter = document.getElementById("counter-text");
+    if(!card || !title || !counter) return;
+    counter.textContent = `合計回数: ${total}回`; 
+    card.className = "status-card";
+    if (total >= 150) { card.classList.add("rank-expert"); title.innerHTML = "エキスパート 🏆"; }
+    else if (total >= 100) { card.classList.add("rank-rookie"); title.innerHTML = "ルーキー 🏅"; }
+    else if (total >= 50) { card.classList.add("rank-beginner"); title.innerHTML = "ビギナー 📜"; }
+    else { card.classList.add("rank-beginner"); title.innerHTML = "エコ見習い 🌱"; }
+}
+
+function initChart() {
+    const canvas = document.getElementById('ecoChart'); 
+    if(!canvas) return;
+    chartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ecoItems,
+            datasets: [{
+                data: ecoItems.map(item => ecoLogs[item] || 0),
+                backgroundColor: ['#2e7d32', '#4caf50', '#81c784', '#a5d6a7', '#c8e6c9', '#1b5e20', '#388e3c', '#66bb6a', '#43a047', '#7cb342', '#ffb74d', '#ffa726', '#ff9800'],
+                borderWidth: 2, 
+                borderColor: '#ffffff'
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { boxWidth: 12, font: { size: 11 } } 
+                } 
+            } 
+        }
+    });
+}
+
+function updateChart() { 
+    if(chartInstance) { 
+        chartInstance.data.labels = ecoItems; 
+        chartInstance.data.datasets[0].data = ecoItems.map(item => ecoLogs[item] || 0); 
+        chartInstance.update();<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>エコ行動記録アプリ</title>
+    <!-- Chart.js の正しいCDNを指定 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --p: #2e7d32; --l: #e8f5e9; --d: #1b5e20; --a: #81c784; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f1f8e9; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        .app-container { width: 100%; max-width: 480px; height: 90vh; background: #fff; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 3px solid var(--p); }
+        .content-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px; }
+        .page { display: none; animation: f 0.3s; }
+        .page.active { display: block; }
+        @keyframes f { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { color: var(--d); margin-bottom: 20px; text-align: center; }
+        .nav-bar { position: absolute; bottom: 0; width: 100%; height: 70px; background: #fff; border-top: 2px solid var(--l); display: flex; z-index: 10; }
+        .nav-btn { flex: 1; border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .nav-btn.active { color: var(--p); background: var(--l); }
+        .nav-icon { width: 24px; height: 24px; position: relative; }
+        .icon-select::before { content: ''; position: absolute; width: 14px; height: 14px; border: 3px solid currentColor; border-radius: 4px; top: 3px; left: 5px; }
+        .icon-chart::before { content: ''; position: absolute; width: 16px; height: 16px; border: 3px solid currentColor; border-radius: 50%; left: 4px; top: 4px; }
+        .icon-status::before { content: ''; position: absolute; width: 12px; height: 12px; border: 3px solid currentColor; border-radius: 50%; top: 2px; left: 6px; }
+        .icon-status::after { content: ''; position: absolute; width: 18px; height: 6px; border: 3px solid currentColor; border-top: none; border-radius: 0 0 10px 10px; bottom: 2px; left: 3px; }
+        .eco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .eco-btn { background: var(--l); border: 2px solid var(--a); border-radius: 16px; padding: 16px; font-size: 1rem; font-weight: bold; color: var(--d); cursor: pointer; text-align: center; }
+        .eco-btn:active { transform: scale(0.95); background: var(--a); color: #fff; }
+        .eco-btn.btn-add { background: #fff3e0; border-color: #ffb74d; color: #e65100; }
+        .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px); background: var(--p); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; padding: 20px; border-radius: 24px; }
+        .modal-content { background: #fff; padding: 24px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; border: 3px solid var(--p); animation: pop 0.3s; }
+        @keyframes pop { from { transform: scale(0.8); } to { transform: scale(1); } }
+        .modal input { width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid var(--a); border-radius: 10px; font-size: 1rem; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-confirm { background: var(--p); color: #fff; }
+        .btn-cancel { background: #e0e0e0; color: #333; }
+        .chart-container { position: relative; margin: auto; height: 280px; width: 280px; }
+        .status-card { background: linear-gradient(135deg, #fff, var(--l)); border-radius: 20px; padding: 24px; text-align: center; border: 2px solid var(--a); position: relative; overflow: hidden; }
+        .rank-title { font-size: 1.8rem; font-weight: bold; color: var(--d); margin-bottom: 5px; }
+        .counter-text { font-size: 1.2rem; color: #555; margin-bottom: 25px; }
+        .illustration-box { width: 140px; height: 140px; margin: 0 auto 30px; position: relative; z-index: 2; }
+        .art-certificate { width: 100px; height: 130px; background: #fffde7; margin: auto; border: 6px double #fbc02d; border-radius: 8px; position: relative; }
+        .art-certificate::before { content: '賞状'; position: absolute; top: 15px; left: 0; width: 100%; text-align: center; font-size: 14px; font-weight: bold; color: #f57f17; }
+        .art-certificate::after { content: ''; position: absolute; bottom: 20px; left: 15px; width: 60px; height: 40px; border-top: 3px dashed #f57f17; border-bottom: 3px dashed #f57f17; }
+        .art-medal { width: 80px; height: 80px; background: #eceff1; border-radius: 50%; margin: 30px auto 0; border: 8px solid #b0bec5; position: relative; }
+        .art-medal::before { content: ''; position: absolute; top: -38px; left: 16px; width: 32px; height: 40px; background: linear-gradient(90deg, #e53935 50%, #1e88e5 50%); border-radius: 4px; z-index: -1; }
+        .art-medal::after { content: '1st'; position: absolute; width: 100%; text-align: center; top: 16px; left: 0; font-size: 20px; font-weight: bold; color: #78909c; }
+        .art-trophy { width: 70px; height: 70px; background: #ffd54f; margin: 20px auto 0; border-radius: 0 0 35px 35px; border: 4px solid #ffb300; position: relative; }
+        .art-trophy::before { content: ''; position: absolute; width: 16px; height: 30px; background: #ffb300; top: 66px; left: 23px; }
+        .art-trophy::after { content: ''; position: absolute; width: 50px; height: 16px; background: #cfd8dc; top: 92px; left: 6px; border-radius: 4px; }
+        .t-handle-l, .t-handle-r { position: absolute; width: 20px; height: 40px; border: 5px solid #ffd54f; border-radius: 50%; top: 5px; }
+        .t-handle-l { left: -16px; } .t-handle-r { right: -16px; }
+        .bg-applause { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; display: flex; justify-content: space-around; pointer-events: none; z-index: 1; opacity: 0.25; }
+        .stick-man { width: 40px; height: 70px; position: relative; }
+        .stick-man::before { content: ''; position: absolute; width: 14px; height: 14px; background: #333; border-radius: 50%; top: 5px; left: 13px; }
+        .sm-body { position: absolute; width: 3px; height: 25px; background: #333; top: 19px; left: 18px; }
+        .sm-body::before { content: ''; position: absolute; width: 10px; height: 20px; border-left: 3px solid #333; transform: rotate(15deg); top: 24px; left: -4px; }
+        .sm-body::after { content: ''; position: absolute; width: 10px; height: 20px; border-right: 3px solid #333; transform: rotate(-15deg); top: 24px; left: 3px; }
+        .sm-arm-l, .sm-arm-r { position: absolute; width: 15px; height: 3px; background: #333; top: 22px; transform-origin: 0% 50%; animation: clap 0.2s infinite alternate; }
+        .sm-arm-l { left: 20px; transform: rotate(-40deg); } .sm-arm-r { right: 20px; transform: rotate(-140deg); }
+        @keyframes clap { 0% { transform: rotate(-30deg); } 100% { transform: rotate(-70deg); } }
+        .rank-beginner .art-medal, .rank-beginner .art-trophy { display: none; }
+        .rank-rookie .art-certificate, .rank-rookie .art-trophy { display: none; }
+        .rank-expert .art-certificate, .rank-expert .art-medal { display: none; }
+    </style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="app-container">
+    <div class="content-area">
+        <div id="page-select" class="page active">
+            <h2>エコ行動を記録</h2>
+            <div id="eco-grid" class="eco-grid"></div>
+        </div>
+        <div id="page-chart" class="page">
+            <h2>みんなの記録グラフ</h2>
+            <div class="chart-container"><canvas id="ecoChart"></canvas></div>
+        </div>
+        <div id="page-status" class="page">
+            <h2>現在のランク</h2>
+            <div id="status-card" class="status-card rank-beginner">
+                <div id="rank-title" class="rank-title">エコ見習い 🌱</div>
+                <div id="counter-text" class="counter-text">合計回数: 0回</div>
+                <div class="illustration-box">
+                    <div class="art-certificate"></div>
+                    <div class="art-medal"></div>
+                    <div class="art-trophy"><div class="t-handle-l"></div><div class="t-handle-r"></div></div>
+                </div>
+                <div class="bg-applause">
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                    <div class="stick-man"><div class="sm-body"></div><div class="sm-arm-l"></div><div class="sm-arm-r"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="switchPage('select')"><div class="nav-icon icon-select"></div>選択ページ</button>
+        <button class="nav-btn" onclick="switchPage('chart')"><div class="nav-icon icon-chart"></div>グラフページ</button>
+        <button class="nav-btn" onclick="switchPage('status')"><div class="nav-icon icon-status"></div>自分の状態</button>
+    </nav>
+</div>
+
+<!-- モーダル定義 -->
+<div id="add-modal" class="modal">
+    <div class="modal-content">
+        <h3>新しいエコ行動を追加</h3>
+        <input type="text" id="new-eco-input" placeholder="例: ゴミ拾い" maxlength="15">
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeAddModal()">キャンセル</button>
+            <button class="btn-confirm" onclick="confirmAddEco()">追加</button>
+        </div>
+    </div>
+</div>
+
+<div id="celebrate-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="celebrate-msg">🎉 ランクアップ！ 🎉</h3>
+        <div class="modal-btns">
+            <button class="btn-confirm" onclick="closeCelebrateModal()">ありがとう！</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let ecoItems = ["マイ箸", "マイボトル", "徒歩", "自転車", "エコマーク", "フリーマーケット", "譲りもの", "リサイクル", "水まき"];
+let ecoLogs = JSON.parse(localStorage.getItem('ecoLogs')) || {};
+let customItems = JSON.parse(localStorage.getItem('customItems')) || [];
+ecoItems = [...ecoItems, ...customItems];
+ecoItems.forEach(item => { if(ecoLogs[item] === undefined) ecoLogs[item] = 0; });
+let chartInstance = null;
+
+document.addEventListener("DOMContentLoaded", () => { 
+    renderEcoButtons(); 
+    updateStatusPage(); 
+    initChart(); 
+});
+
+function switchPage(pId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`page-${pId}`).classList.add('active');
+    const idx = pId === 'select' ? 0 : pId === 'chart' ? 1 : 2;
+    document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    if(pId === 'chart') updateChart();
+}
+
+function renderEcoButtons() {
+    const grid = document.getElementById("eco-grid"); 
+    if(!grid) return; 
+    grid.innerHTML = "";
+    ecoItems.forEach(item => {
+        const btn = document.createElement("button"); 
+        btn.className = "eco-btn"; 
+        btn.textContent = item;
+        btn.onclick = () => logEcoAction(item); 
+        grid.appendChild(btn);
+    });
+    const addBtn = document.createElement("button"); 
+    addBtn.className = "eco-btn btn-add"; 
+    addBtn.textContent = "＋ 追加";
+    addBtn.onclick = openAddModal; 
+    grid.appendChild(addBtn);
+}
+
+function logEcoAction(item) {
+    ecoLogs[item] = (ecoLogs[item] || 0) + 1; 
+    localStorage.setItem('ecoLogs', JSON.stringify(ecoLogs));
+    showToast(`${item} ${ecoLogs[item]}回目🎉`);
+    const total = Object.values(ecoLogs).reduce((a, b) => a + b, 0);
+    if (total === 50) triggerCelebration("50回目おめでとう！\n【ビギナー📜】になりました！");
+    if (total === 100) triggerCelebration("100回目おめでとう！\n【ルーキー🏅】になりました！");
+    if (total === 150) triggerCelebration("150回目おめでとう！\n【エキスパート🏆】になりました！");
+    updateStatusPage();
+}
+
+function showToast(msg) {
+    const t = document.getElementById("toast"); 
+    if(!t) return;
+    t.textContent = msg; 
+    t.classList.add("show"); 
+    setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+function triggerCelebration(msg) {
+    const m = document.getElementById("celebrate-modal"), t = document.getElementById("celebrate-msg");
+    if(m && t) { t.innerText = msg; m.style.display = "flex"; }
+}
+
+function closeCelebrateModal() { 
+    document.getElementById("celebrate-modal").style.display = "none"; 
+}
+
+function openAddModal() { 
+    document.getElementById("add-modal").style.display = "flex"; 
+}
+
+function closeAddModal() { 
+    document.getElementById("add-modal").style.display = "none"; 
+    document.getElementById("new-eco-input").value = ""; 
+}
+
+function confirmAddEco() {
+    const input = document.getElementById("new-eco-input"); 
+    if(!input) return;
+    const val = input.value.trim(); 
+    if(!val) return;
+    if(ecoItems.includes(val)) { alert("その項目はすでにあります。"); return; }
+    ecoItems.push(val); 
+    customItems.push(val); 
+    ecoLogs[val] = 0;
+    localStorage.setItem('customItems', JSON.stringify(customItems)); 
+    localStorage.setItem('ecoLogs', JSON.stringify(ecoLogs));
+    renderEcoButtons(); 
+    closeAddModal(); 
+    showToast(`「${val}」を追加しました！`);
+}
+
+function updateStatusPage() {
+    const total = Object.values(ecoLogs).reduce((a, b) => a + b, 0);
+    const card = document.getElementById("status-card"), title = document.getElementById("rank-title"), counter = document.getElementById("counter-text");
+    if(!card || !title || !counter) return;
+    counter.textContent = `合計回数: ${total}回`; 
+    card.className = "status-card";
+    if (total >= 150) { card.classList.add("rank-expert"); title.innerHTML = "エキスパート 🏆"; }
+    else if (total >= 100) { card.classList.add("rank-rookie"); title.innerHTML = "ルーキー 🏅"; }
+    else if (total >= 50) { card.classList.add("rank-beginner"); title.innerHTML = "ビギナー 📜"; }
+    else { card.classList.add("rank-beginner"); title.innerHTML = "エコ見習い 🌱"; }
+}
+
+function initChart() {
+    const canvas = document.getElementById('ecoChart'); 
+    if(!canvas) return;
+    chartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ecoItems,
+            datasets: [{
+                data: ecoItems.map(item => ecoLogs[item] || 0),
+                backgroundColor: ['#2e7d32', '#4caf50', '#81c784', '#a5d6a7', '#c8e6c9', '#1b5e20', '#388e3c', '#66bb6a', '#43a047', '#7cb342', '#ffb74d', '#ffa726', '#ff9800'],
+                borderWidth: 2, 
+                borderColor: '#ffffff'
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { boxWidth: 12, font: { size: 11 } } 
+                } 
+            } 
+        }
+    });
+}
+
+function updateChart() { 
+    if(chartInstance) { 
+        chartInstance.data.labels = ecoItems; 
+        chartInstance.data.datasets[0].data = ecoItems.map(item => ecoLogs[item] || 0); 
+        chartInstance.update(); 
+    } 
+}
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイフォトカレンダー</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 15px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-size: 1.25rem;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        /* カレンダーコントロール */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-nav button {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        .calendar-nav button:active {
+            background: #cbd5e1;
+        }
+        #month-year {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        /* カレンダーグリッド */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        .day-name {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #718096;
+            padding-bottom: 4px;
+        }
+        .day-name:first-child { color: #e53e3e; } /* 日曜 */
+        .day-name:last-child { color: #3182ce; }  /* 土曜 */
+
+        .day-cell {
+            aspect-ratio: 1;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .day-cell.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+        .date-number {
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 2;
+            margin-bottom: 2px;
+        }
+        /* 写真表示エリア */
+        .day-photo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        /* モーダル（写真選択画面） */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: #2d3748;
+        }
+        .modal-content input[type="file"] {
+            margin: 15px 0;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-danger {
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>マイフォトカレンダー</h1>
+        <div class="calendar-nav">
+            <button onclick="changeMonth(-1)">＜</button>
+            <div id="month-year"></div>
+            <button onclick="changeMonth(1)">＞</button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+
+    <!-- 写真選択用モーダル -->
+    <div id="modal">
+        <div class="modal-content">
+            <h3 id="modal-date-title">日付</h3>
+            <p style="font-size: 0.85rem; color: #666;">スマホのフォルダから写真を選んでください</p>
+            <input type="file" id="photo-input" accept="image/*">
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">キャンセル</button>
+                <button class="btn-danger" onclick="deletePhoto()">削除</button>
+                <button class="btn-primary" onclick="savePhoto()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let selectedDateStr = "";
+        // 保存データ（ブラウザのローカルストレージに保存されます）
+        let photoData = JSON.parse(localStorage.getItem('calendarPhotos') || '{}');
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('month-year').textContent = `${year}年 ${month + 1}月`;
+            
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            // 曜日の見出し
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            days.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = d;
+                grid.appendChild(div);
+            });
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+
+            // 空白セル
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell empty';
+                grid.appendChild(emptyCell);
+            }
+
+            // 日付セル
+            for (let i = 1; i <= lastDay; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                const numSpan = document.createElement('span');
+                numSpan.className = 'date-number';
+                numSpan.textContent = i;
+                cell.appendChild(numSpan);
+
+                // 保存された写真があれば表示
+                if (photoData[dateStr]) {
+                    const img = document.createElement('img');
+                    img.src = photoData[dateStr];
+                    img.className = 'day-photo';
+                    cell.appendChild(img);
+                }
+
+                cell.onclick = () => openModal(dateStr);
+                grid.appendChild(cell);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function openModal(dateStr) {
+            selectedDateStr = dateStr;
+            document.getElementById('modal-date-title').textContent = `${dateStr} の写真`;
+            document.getElementById('photo-input').value = '';
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function savePhoto() {
+            const fileInput = document.getElementById('photo-input');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoData[selectedDateStr] = e.target.result;
+                    localStorage.setItem('calendarPhotos', JSON.stringify(photoData));
+                    closeModal();
+                    renderCalendar();
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                closeModal();
+            }
+        }
+
+        function deletePhoto() {
+            if (photoData[selectedDateStr]) {
+                delete photoData[selectedDateStr];
+                localStorage.setItem('calendarPhotos', JSON.stringify(photoData));
+            }
+            closeModal();
+            renderCalendar();
+        }
+
+        // 初期描画
+        renderCalendar();
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイフォトカレンダー</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 15px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-size: 1.25rem;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        /* カレンダーコントロール */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-nav button {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        .calendar-nav button:active {
+            background: #cbd5e1;
+        }
+        #month-year {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        /* カレンダーグリッド */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        .day-name {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #718096;
+            padding-bottom: 4px;
+        }
+        .day-name:first-child { color: #e53e3e; } /* 日曜 */
+        .day-name:last-child { color: #3182ce; }  /* 土曜 */
+
+        .day-cell {
+            aspect-ratio: 1;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .day-cell.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+        .date-number {
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 2;
+            margin-bottom: 2px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 0 3px;
+            border-radius: 4px;
+        }
+        /* 写真表示エリア */
+        .day-photo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        /* モーダル（写真選択画面） */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: #2d3748;
+        }
+        .modal-content input[type="file"] {
+            margin: 15px 0;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .btn-danger {
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>マイフォトカレンダー</h1>
+        <div class="calendar-nav">
+            <button onclick="changeMonth(-1)">＜</button>
+            <div id="month-year"></div>
+            <button onclick="changeMonth(1)">＞</button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+
+    <!-- 写真選択用モーダル -->
+    <div id="modal">
+        <div class="modal-content">
+            <h3 id="modal-date-title">日付</h3>
+            <p style="font-size: 0.85rem; color: #666;">スマホのフォルダから写真を選んでください</p>
+            <input type="file" id="photo-input" accept="image/*">
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">キャンセル</button>
+                <button class="btn-danger" onclick="deletePhoto()">削除</button>
+                <button class="btn-primary" onclick="savePhoto()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let selectedDateStr = "";
+        let photoData = JSON.parse(localStorage.getItem('calendarPhotos') || '{}');
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('month-year').textContent = `${year}年 ${month + 1}月`;
+            
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            days.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = d;
+                grid.appendChild(div);
+            });
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell empty';
+                grid.appendChild(emptyCell);
+            }
+
+            for (let i = 1; i <= lastDay; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                const numSpan = document.createElement('span');
+                numSpan.className = 'date-number';
+                numSpan.textContent = i;
+                cell.appendChild(numSpan);
+
+                if (photoData[dateStr]) {
+                    const img = document.createElement('img');
+                    img.src = photoData[dateStr];
+                    img.className = 'day-photo';
+                    cell.appendChild(img);
+                }
+
+                cell.onclick = () => openModal(dateStr);
+                grid.appendChild(cell);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function openModal(dateStr) {
+            selectedDateStr = dateStr;
+            document.getElementById('modal-date-title').textContent = `${dateStr} の写真`;
+            document.getElementById('photo-input').value = '';
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function savePhoto() {
+            const fileInput = document.getElementById('photo-input');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoData[selectedDateStr] = e.target.result;
+                    localStorage.setItem('calendarPhotos', JSON.stringify(photoData));
+                    closeModal();
+                    renderCalendar();
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                closeModal();
+            }
+        }
+
+        function deletePhoto() {
+            if (photoData[selectedDateStr]) {
+                delete photoData[selectedDateStr];
+                localStorage.setItem('calendarPhotos', JSON.stringify(photoData));
+            }
+            closeModal();
+            renderCalendar();
+        }
+
+        renderCalendar();
+    </script>
+</body>
+</html>
